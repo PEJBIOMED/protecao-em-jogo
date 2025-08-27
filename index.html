@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PROTEÇÃO EM JOGO</title>
+<style>
+  :root {
+    --primary: #FFEB3B; /* Amarelo */
+    --secondary: #000000; /* Preto */
+    --accent: #FBC02D; /* Amarelo mais escuro */
+    --correct: #4CAF50; /* Verde para correto */
+    --incorrect: #F44336; /* Vermelho para incorreto */
+  }
+  
+  body {
+    margin: 0; 
+    font-family: 'Arial', sans-serif;
+    background-color: var(--secondary);
+    color: var(--primary);
+    display: flex;
+    min-height: 100vh;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 800px;
+    background-color: rgba(0, 0, 0, 0.8);
+    border: 2px solid var(--primary);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 0 20px rgba(255, 235, 59, 0.3);
+  }
+
+  .reset-ranking-btn {
+    background: transparent;
+    border: 1px solid var(--primary);
+    color: var(--primary);
+    font-size: 16px;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin: 10px auto;
+  }
+
+  .reset-ranking-btn:hover {
+    background-color: var(--primary);
+    color: var(--secondary);
+  }
+
+  h1 { 
+    font-size: 28px; 
+    margin: 6px 0 12px; 
+    text-align: center; 
+    color: var(--primary);
+    text-shadow: 0 0 10px rgba(255, 235, 59, 0.5);
+  }
+
+  .topbar {
+    display: flex; 
+    gap: 12px; 
+    align-items: center; 
+    justify-content: center; 
+    flex-wrap: wrap; 
+    margin-bottom: 10px;
+  }
+
+  button {
+    padding: 12px 18px; 
+    border: none; 
+    background: var(--primary); 
+    color: var(--secondary);
+    cursor: pointer; 
+    border-radius: 8px; 
+    font-weight: 600;
+    transition: transform 0.1s, background-color 0.2s;
+  }
+  
+  button:hover { 
+    transform: translateY(-2px); 
+    background: var(--accent);
+  }
+  
+  button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+
+  #mensagem { 
+    text-align: center; 
+    min-height: 24px; 
+    margin: 6px 0 14px; 
+    font-weight: 500; 
+    font-size: 18px;
+  }
+
+  .score-display {
+    font-size: 24px;
+    font-weight: bold;
+    text-align: center;
+    margin: 15px 0;
+    color: var(--primary);
+  }
+
+  .auth-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+
+  .auth-modal.active {
+    display: flex;
+  }
+
+  .auth-card {
+    background: var(--secondary);
+    padding: 25px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+    border: 2px solid var(--primary);
+  }
+
+  .auth-card h3 {
+    margin-top: 0;
+    color: var(--primary);
+  }
+
+  .auth-input {
+    width: 100%;
+    padding: 12px;
+    margin: 15px 0;
+    border: 2px solid var(--primary);
+    border-radius: 8px;
+    font-size: 16px;
+    text-align: center;
+    background-color: var(--secondary);
+    color: var(--primary);
+  }
+
+  .auth-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+  }
+
+  .auth-btn {
+    padding: 10px 20px;
+  }
+
+  .auth-btn.cancel {
+    background: #555;
+    color: var(--primary);
+  }
+
+  .feedback-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.9);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+
+  .feedback-modal.active {
+    display: flex;
+  }
+
+  .feedback-card {
+    background: var(--secondary);
+    padding: 25px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    text-align: center;
+    border: 2px solid var(--primary);
+  }
+
+  .feedback-icon {
+    font-size: 60px;
+    margin-bottom: 15px;
+  }
+
+  .feedback-title {
+    font-size: 24px;
+    margin-bottom: 15px;
+    color: var(--primary);
+  }
+
+  .feedback-explanation {
+    background: rgba(255, 235, 59, 0.1);
+    padding: 15px;
+    border-radius: 8px;
+    margin: 15px 0;
+    border-left: 4px solid var(--primary);
+    text-align: left;
+  }
+
+  .quiz-card {
+    background: var(--secondary);
+    border-radius: 12px;
+    padding: 20px;
+    margin: 15px 0;
+    box-shadow: 0 4px 12px rgba(255, 235, 59, 0.2);
+    border: 2px solid var(--primary);
+  }
+
+  .question-text {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: var(--primary);
+  }
+
+  .question-points {
+    display: inline-block;
+    background: var(--primary);
+    color: var(--secondary);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 14px;
+    margin-left: 10px;
+    font-weight: bold;
+  }
+
+  .question-points.bonus {
+    background: var(--accent);
+  }
+
+  .options-container {
+    display: grid;
+    gap: 10px;
+  }
+
+  .option {
+    padding: 12px 15px;
+    background: rgba(255, 235, 59, 0.1);
+    border: 1px solid var(--primary);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--primary);
+  }
+
+  .option:hover {
+    background: rgba(255, 235, 59, 0.2);
+  }
+
+  .option.correct {
+    background: var(--primary);
+    color: var(--secondary);
+    border-color: var(--primary);
+  }
+
+  .option.incorrect {
+    background: var(--incorrect);
+    color: white;
+    border-color: var(--incorrect);
+  }
+
+  .option.disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+
+  .timer-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 15px 0;
+  }
+
+  .timer {
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--primary);
+    padding: 8px 16px;
+    background: rgba(255, 235, 59, 0.1);
+    border-radius: 50px;
+    width: 60px;
+    text-align: center;
+    border: 2px solid var(--primary);
+  }
+
+  .timer.warning {
+    color: var(--incorrect);
+    animation: pulse 0.8s infinite;
+  }
+
+  .start-screen {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.9);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+  }
+
+  .start-card {
+    background: var(--secondary);
+    padding: 2rem;
+    border-radius: 16px;
+    text-align: center;
+    max-width: 500px;
+    width: 90%;
+    border: 2px solid var(--primary);
+  }
+
+  .start-card h2 {
+    margin-top: 0;
+    color: var(--primary);
+  }
+
+  .nickname-input {
+    padding: 12px;
+    border: 2px solid var(--primary);
+    border-radius: 8px;
+    font-size: 16px;
+    width: 80%;
+    margin: 1rem 0;
+    text-align: center;
+    background-color: var(--secondary);
+    color: var(--primary);
+  }
+
+  .ranking {
+    margin-top: 20px;
+    background: rgba(255, 235, 59, 0.1);
+    border-radius: 12px;
+    padding: 16px;
+    border: 1px solid var(--primary);
+    max-height: 200px;
+    overflow-y: auto;
+  }
+
+  .ranking h3 {
+    margin-top: 0;
+    text-align: center;
+    color: var(--primary);
+  }
+
+  .ranking-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px;
+    border-bottom: 1px solid var(--primary);
+    color: var(--primary);
+  }
+
+  .ranking-item:last-child {
+    border-bottom: none;
+  }
+
+  .ranking-position {
+    font-weight: bold;
+    width: 30px;
+    color: var(--primary);
+  }
+
+  .ranking-name {
+    flex: 1;
+    text-align: left;
+    padding: 0 10px;
+  }
+
+  .ranking-score {
+    font-weight: bold;
+    color: var(--primary);
+  }
+
+  .current-player {
+    background-color: rgba(255, 235, 59, 0.2);
+    border-radius: 6px;
+  }
+
+  .feedback {
+    text-align: center;
+    font-size: 60px;
+    margin: 20px 0;
+    min-height: 70px;
+  }
+
+  .end-screen {
+    text-align: center;
+  }
+
+  .end-screen h2 {
+    color: var(--primary);
+    font-size: 28px;
+  }
+
+  .final-score {
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--primary);
+    margin: 15px 0;
+  }
+
+  .welcome-screen {
+    position: fixed;
+    inset: 0;
+    background: var(--secondary);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    text-align: center;
+  }
+
+  .radiation-symbol {
+    font-size: 100px;
+    margin-bottom: 20px;
+    animation: pulse 2s infinite;
+  }
+
+  .welcome-title {
+    font-size: 36px;
+    font-weight: bold;
+    color: var(--primary);
+    margin-bottom: 30px;
+    text-shadow: 0 0 10px rgba(255, 235, 59, 0.5);
+  }
+
+  .final-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.9);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+
+  .final-modal.active {
+    display: flex;
+  }
+
+  .final-card {
+    background: var(--secondary);
+    padding: 30px;
+    border-radius: 16px;
+    text-align: center;
+    max-width: 500px;
+    width: 90%;
+    border: 2px solid var(--primary);
+  }
+
+  .final-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 20px;
+  }
+
+  @keyframes pulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.1); opacity: 0.8; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  @media (max-width:700px){
+    .container {
+      padding: 15px;
+    }
+    
+    h1 {
+      font-size: 22px;
+    }
+    
+    .question-text {
+      font-size: 16px;
+    }
+    
+    .nickname-input {
+      width: 90%;
+    }
+    
+    .welcome-title {
+      font-size: 28px;
+    }
+    
+    .radiation-symbol {
+      font-size: 80px;
+    }
+    
+    .final-buttons {
+      flex-direction: column;
+    }
+  }
+</style>
+</head>
+<body>
+  <!-- Tela de abertura -->
+  <div id="welcomeScreen" class="welcome-screen">
+    <div class="radiation-symbol">☢️</div>
+    <div class="welcome-title">PROTEÇÃO EM JOGO</div>
+    <button id="startWelcomeBtn" class="auth-btn">Iniciar</button>
+  </div>
+
+  <!-- Modal de autenticação para zerar ranking -->
+  <div id="authModal" class="auth-modal">
+    <div class="auth-card">
+      <h3>Zerar Ranking</h3>
+      <p>Digite a senha para zerar o ranking:</p>
+      <input type="password" id="passwordInput" class="auth-input" placeholder="Senha">
+      <div class="auth-buttons">
+        <button id="confirmReset" class="auth-btn">Confirmar</button>
+        <button id="cancelReset" class="auth-btn cancel">Cancelar</button>
+      </div>
+      <div id="authMessage" style="color: var(--primary); margin-top: 10px; height: 20px;"></div>
+    </div>
+  </div>
+
+  <!-- Modal de feedback -->
+  <div id="feedbackModal" class="feedback-modal">
+    <div class="feedback-card">
+      <div id="feedbackIcon" class="feedback-icon"></div>
+      <div id="feedbackTitle" class="feedback-title"></div>
+      <div id="feedbackExplanation" class="feedback-explanation"></div>
+      <button id="nextQuestion" class="auth-btn">Próxima Pergunta</button>
+    </div>
+  </div>
+
+  <!-- Modal final -->
+  <div id="finalModal" class="final-modal">
+    <div class="final-card">
+      <h2>Quiz Finalizado!</h2>
+      <p class="final-score">Sua pontuação: <span id="finalScoreValue">0</span> pontos</p>
+      <div class="final-buttons">
+        <button id="playAgainBtn" class="auth-btn">Jogar Novamente</button>
+        <button id="nextPlayerBtn" class="auth-btn">Próximo Jogador</button>
+        <button id="backToWelcomeBtn" class="auth-btn cancel">Tela de Abertura</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tela de início com cadastro de apelido -->
+  <div id="startScreen" class="start-screen">
+    <div class="start-card">
+      <h2>PROTEÇÃO EM JOGO</h2>
+      <p>Digite seu apelido para começar:</p>
+      <input type="text" id="nicknameInput" class="nickname-input" placeholder="Seu apelido" maxlength="15">
+      <button id="startGame" class="ok">Iniciar Quiz</button>
+      
+      <div class="ranking">
+        <h3>Ranking - Maiores Pontuações</h3>
+        <div id="rankingList"></div>
+      </div>
+      
+      <!-- Botão para zerar ranking na tela inicial -->
+      <button id="resetRankingBtn" class="reset-ranking-btn" title="Zerar ranking">🚫 Zerar Ranking</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <h1>PROTEÇÃO EM JOGO</h1>
+    
+    <div class="topbar">
+      <div id="playerInfo" style="font-weight: bold;"></div>
+      <div id="timerDisplay">Tempo: 00:00</div>
+    </div>
+    
+    <div class="score-display">
+      Pontuação: <span id="scoreValue">0</span> pontos
+    </div>
+    
+    <div class="timer-container">
+      <div id="timer" class="timer">25</div>
+    </div>
+    
+    <div id="mensagem"></div>
+    
+    <div id="feedback" class="feedback"></div>
+    
+    <div id="quizContainer"></div>
+  </div>
+
+<script>
+// =========================
+// BANCO DE PERGUNTAS TÉCNICAS
+// =========================
+const perguntas = [
+  {
+    pergunta: "Qual é a unidade de medida da dose absorvida de radiação?",
+    opcoes: ["Sievert (Sv)", "Gray (Gy)", "Becquerel (Bq)", "Curie (Ci)"],
+    resposta: 1, // B (Gray)
+    pontos: 10,
+    dica: "Gray mede a energia absorvida por unidade de massa.",
+    explicacao: "O Gray (Gy) é a unidade do Sistema Internacional para dose absorvida, definida como a absorção de 1 joule de energia de radiação por quilograma de matéria. O Sievert (Sv) é usado para dose equivalente/efetiva, que leva em conta o tipo de radiação e a sensibilidade dos tecidos."
+  },
+  {
+    pergunta: "O princípio ALARA significa:",
+    opcoes: [
+      "Always Leave Area Rapidly Always",
+      "As Low As Reasonably Achievable",
+      "Advanced Laboratory for Radiation Analysis",
+      "Atomic Level Radiation Absorption"
+    ],
+    resposta: 1, // A (As Low As Reasonably Achievable)
+    pontos: 10,
+    dica: "É um princípio de otimização em proteção radiológica.",
+    explicacao: "ALARA significa 'As Low As Reasonably Achievable' (Tão Baixo Quanto Razoavelmente Exequível). É um princípio fundamental em proteção radiológica que busca minimizar as exposições à radiação, considerando fatores técnicos, econômicos e sociais."
+  },
+  {
+    pergunta: "Qual destes materiais é mais eficiente para blindagem contra raios-X?",
+    opcoes: ["Alumínio", "Vidro", "Chumbo", "Madeira"],
+    resposta: 2, // C (Chumbo)
+    pontos: 10,
+    dica: "Elementos com alto número atômico são melhores blindagens.",
+    explicacao: "O chumbo é o material mais eficiente para blindagem contra raios-X devido ao seu alto número atômico (82) e alta densidade, que proporcionam maior atenuação da radiação. Materiais com alto número atômico têm maior probabilidade de interação com os fótons de raios-X."
+  },
+  {
+    pergunta: "Qual distância deve ser mantida da fonte radioativa para reduzir a exposição?",
+    opcoes: [
+      "No mínimo 50 cm",
+      "Exatamente 1 metro",
+      "A maior distância possível",
+      "Não importa a distância"
+    ],
+    resposta: 2, // C (A maior distância possível)
+    pontos: 10,
+    dica: "A intensidade da radiação diminui com o quadrado da distância.",
+    explicacao: "A intensidade da radiação segue a lei do inverso do quadrado da distância. Isso significa que ao dobrar a distância de uma fonte pontual, a intensidade da radiação reduz a um quarto. Por isso, manter a maior distância possível é uma das formas mais eficazes de reduzir a exposição."
+  },
+  {
+    pergunta: "O dosímetro pessoal deve ser usado:",
+    opcoes: [
+      "Dentro do bolso do avental",
+      "No pulso, como um relógio",
+      "No torso, fora do avental de chumbo",
+      "Não é necessário usar dosímetro"
+    ],
+    resposta: 2, // C (No torso, fora do avental de chumbo)
+    pontos: 10,
+    dica: "Deve ficar na região do torso para medir a dose efetiva.",
+    explicacao: "O dosímetro pessoal deve ser usado no torso, fora do avental de chumbo, para medir adequadamente a dose efetiva. Se colocado dentro do avental, subestimaria a exposição real. A região do torso contém órgãos vitais e representa melhor a exposição corporal total."
+  },
+  {
+    pergunta: "Qual é o tempo máximo de exposição ocupacional por ano?",
+    opcoes: [
+      "100 mSv por ano", 
+      "500 mSv por ano",
+      "1 Sv por ano",
+      "20 mSv por ano"
+    ],
+    resposta: 3, // D (20 mSv por ano)
+    pontos: 10,
+    dica: "Este é o limite estabelecido para trabalhadores expostos.",
+    explicacao: "Para trabalhadores profissionalmente expostos à radiação, o limite de dose efetiva is de 20 mSv por ano, averaged over defined periods of 5 years (100 mSv em 5 anos), com nenhum ano excedendo 50 mSv. Este limite é estabelecido pela maioria das agências regulatórias internacionais."
+  },
+  {
+    pergunta: "O que significa o símbolo de radiação?",
+    opcoes: [
+      "Equipamento médico",
+      "Área esterilizada",
+      "Sala de exames",
+      "Presença de radiação ionizante"
+    ],
+    resposta: 3, // D (Presença de radiação ionizante)
+    pontos: 10,
+    dica: "Este símbolo alerta para perigo de radiação ionizante.",
+    explicacao: "O símbolo internacional de radiação (trifólio) indica a presença de radiação ionizante. Este símbolo alerta as pessoas para tomarem precauções adequadas em áreas onde há risco de exposição à radiação, como salas de raios-X, instalações nucleares e áreas com materiais radioativos."
+  },
+  {
+    pergunta: "Qual destes é um princípio básico da proteção radiológica?",
+    opcoes: [
+      "Velocidade, temperatura e pressão",
+      "Cor, textura e brilho",
+      "Tempo, distância e blindagem",
+      "Peso, volume e densidade"
+    ],
+    resposta: 2, // C (Tempo, distância e blindagem)
+    pontos: 10,
+    dica: "São os três princípios fundamentais.",
+    explicacao: "Os três princípios básicos da proteção radiológica são: 1) Tempo - reduzir o tempo de exposição; 2) Distância - aumentar a distância da fonte radioativa; 3) Blindagem - usar materiais adequados para atenuar a radiação. Estes princípios são aplicados para minimizar a exposição à radiação."
+  },
+  {
+    pergunta: "Para que serve o avental de chumbo?",
+    opcoes: [
+      "Proteger apenas contra radiação primária",
+      "É apenas um uniforme",
+      "Proteger contra contaminação",
+      "Proteger contra radiação espalhada"
+    ],
+    resposta: 3, // D (Proteger contra radiação espalhada)
+    pontos: 10,
+    dica: "O chumbo absorve a radiação ionizante.",
+    explicacao: "O avental de chumbo serve principalmente para proteger contra radiação espalhada (scatter radiation) que é produzida quando o feixe primário de raios-X interage com o paciente ou com objetos na sala. O chumbo is eficaz na absorção desta radiação secundária, reduzindo a exposição do profissional."
+  },
+  {
+    pergunta: "Qual é a principal finalidade da proteção radiológica?",
+    opcoes: [
+      "Eliminar completamente qualquer risco de radiação",
+      "Permitir exposições ilimitadas à radiação",
+      "Substituir completamente os equipamentos de radiação",
+      "Prevenir efeitos determinísticos e limitar a probabilidade de efeitos estocásticos"
+    ],
+    resposta: 3, // D (Prevenir efeitos determinísticos e limitar a probabilidade de efeitos estocásticos)
+    pontos: 10,
+    dica: "Envolve tanto efeitos imediatos quanto de longo prazo.",
+    explicacao: "A proteção radiológica tem como principal finalidade prevenir efeitos determinísticos (que têm um limiar de dose) e limitar a probabilidade de ocorrência de efeitos estocásticos (que não têm limiar e cuja probabilidade aumenta com a dose)."
+  },
+  {
+    pergunta: "O que é radiação ionizante?",
+    opcoes: [
+      "Qualquer tipo de luz visível",
+      "Radiação de micro-ondas",
+      "Radiação de rádio",
+      "Radiação com energia suficiente para remover elétrons de átomos"
+    ],
+    resposta: 3, // D (Radiação com energia suficiente para remover elétrons de átomos)
+    pontos: 10,
+    dica: "Envolve ionização de átomos e moléculas.",
+    explicacao: "Radiação ionizante é qualquer tipo de radiação que possui energia suficiente para remover elétrons de átomos ou moléculas, produzindo íons. Exemplos incluem raios-X, raios gama e partículas alfa e beta de alta energia."
+  },
+  {
+    pergunta: "O que é um efeito estocástico da radiação?",
+    opcoes: [
+      "Efeito que sempre ocorre acima de um determinado limiar de dose",
+      "Efeito que não tem relação com a dose recebida",
+      "Efeito que melhora a saúde do indivíduo",
+      "Efeito cuja probabilidade de ocorrência aumenta com a dose, sem limiar"
+    ],
+    resposta: 3, // D (Efeito cuja probabilidade de ocorrência aumenta com a dose, sem limiar)
+    pontos: 10,
+    dica: "Está relacionado a probabilidades, não a gravidade.",
+    explicacao: "Efeitos estocásticos são aqueles cuja probabilidade de ocorrência aumenta com a dose de radiação recebida, mas sem um limiar definido. A gravidade do efeito não depende da dose. O câncer é um exemplo de efeito estocástico da radiação."
+  },
+  {
+    pergunta: "Qual é a função do dosímetro individual?",
+    opcoes: [
+      "Produzir imagens radiológicas",
+      "Blindar contra radiação",
+      "Emitir radiação para tratamento",
+      "Medir a dose de radiação recebida por um indivíduo"
+    ],
+    resposta: 3, // D (Medir a dose de radiação recebida por um indivíduo)
+    pontos: 10,
+    dica: "Está relacionado à monitoração individual.",
+    explicacao: "O dosímetro individual é um dispositivo usado para medir a dose de radiação ionizante recebida por uma pessoa durante um período de tempo. É essencial para garantir que os limites de dose sejam respeitados e para monitorar a exposição ocupacional à radiação."
+  },
+  {
+    pergunta: "O que é a otimização na proteção radiológica?",
+    opcoes: [
+      "Maximizar as doses para obter melhores imagens",
+      "Ignorar os níveis de radiação",
+      "Usar sempre a dose máxima permitida",
+      "Manter as doses tão baixas quanto razoavelmente exequíveis (princípio ALARA)"
+    ],
+    resposta: 3, // D (Manter as doses tão baixas quanto razoavelmente exequíveis)
+    pontos: 10,
+    dica: "Está relacionado ao princípio ALARA.",
+    explicacao: "A otimização na proteção radiológica refere-se ao princípio ALARA (As Low As Reasonably Achievable), que significa manter as doses de radiação tão baixas quanto razoavelmente exequível, levando em consideração fatores econômicos e sociais. É um dos três princípios fundamentais da proteção radiológica."
+  },
+  {
+    pergunta: "Qual é o efeito biológico mais perigoso da radiação?",
+    opcoes: [
+      "Queimaduras na pele",
+      "Queda de cabelo",
+      "Náuseas temporárias",
+      "Danos ao DNA celular"
+    ],
+    resposta: 3, // D (Danos ao DNA celular)
+    pontos: 20, // Pergunta de maior valor (sobre DNA)
+    dica: "Danos ao DNA podem causar mutações e câncer.",
+    explicacao: "O efeito biológico mais perigoso da radiação ionizante são os danos ao DNA celular, que podem levar a mutações genéticas e desenvolvimento de câncer. Estes são efeitos estocásticos (probabilísticos) que não têm limiar de dose e podem ocorrer mesmo com baixas exposições, tornando-os particularmente preocupantes na proteção radiológica."
+  }
+];
+
+// =========================
+// ESTADO DO JOGO
+// =========================
+let perguntaAtual = 0;
+let pontuacao = 0;
+let timerInterval;
+let quizTimerInterval;
+let tempoTotal = 0;
+let playerName = "";
+let ranking = JSON.parse(localStorage.getItem('radioprotection_ranking')) || [];
+let respostaSelecionada = null;
+let respostaCorreta = null;
+
+// Elementos do DOM
+const quizContainer = document.getElementById('quizContainer');
+const playerInfo = document.getElementById('playerInfo');
+const scoreValue = document.getElementById('scoreValue');
+const timerDisplay = document.getElementById('timerDisplay');
+const timerEl = document.getElementById('timer');
+const msgEl = document.getElementById('mensagem');
+const feedbackEl = document.getElementById('feedback');
+const startScreen = document.getElementById('startScreen');
+const welcomeScreen = document.getElementById('welcomeScreen');
+const nicknameInput = document.getElementById('nicknameInput');
+const startGameBtn = document.getElementById('startGame');
+const startWelcomeBtn = document.getElementById('startWelcomeBtn');
+const rankingList = document.getElementById('rankingList');
+const resetRankingBtn = document.getElementById('resetRankingBtn');
+const authModal = document.getElementById('authModal');
+const passwordInput = document.getElementById('passwordInput');
+const confirmReset = document.getElementById('confirmReset');
+const cancelReset = document.getElementById('cancelReset');
+const authMessage = document.getElementById('authMessage');
+const feedbackModal = document.getElementById('feedbackModal');
+const feedbackIcon = document.getElementById('feedbackIcon');
+const feedbackTitle = document.getElementById('feedbackTitle');
+const feedbackExplanation = document.getElementById('feedbackExplanation');
+const nextQuestionBtn = document.getElementById('nextQuestion');
+const finalModal = document.getElementById('finalModal');
+const finalScoreValue = document.getElementById('finalScoreValue');
+const playAgainBtn = document.getElementById('playAgainBtn');
+const nextPlayerBtn = document.getElementById('nextPlayerBtn');
+const backToWelcomeBtn = document.getElementById('backToWelcomeBtn');
+
+// Inicializar a tela de abertura
+welcomeScreen.style.display = 'flex';
+
+// Event listeners
+startWelcomeBtn.addEventListener('click', () => {
+  welcomeScreen.style.display = 'none';
+  startScreen.style.display = 'flex';
+  updateRankingList();
+});
+
+startGameBtn.addEventListener('click', startGame);
+nicknameInput.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') startGame();
+});
+
+// Sistema de zerar ranking
+resetRankingBtn.addEventListener('click', () => {
+  authModal.classList.add('active');
+  passwordInput.value = '';
+  authMessage.textContent = '';
+  passwordInput.focus();
+});
+
+confirmReset.addEventListener('click', () => {
+  if (passwordInput.value === 'zerar') {
+    // Senha correta - zerar ranking
+    ranking = [];
+    localStorage.setItem('radioprotection_ranking', JSON.stringify(ranking));
+    updateRankingList();
+    authModal.classList.remove('active');
+    msgEl.textContent = 'Ranking zerado com sucesso!';
+    setTimeout(() => {
+      msgEl.textContent = '';
+    }, 3000);
+  } else {
+    // Senha incorreta
+    authMessage.textContent = 'Senha incorreta!';
+    passwordInput.value = '';
+    setTimeout(() => {
+      authMessage.textContent = '';
+    }, 2000);
+  }
+});
+
+cancelReset.addEventListener('click', () => {
+  authModal.classList.remove('active');
+});
+
+// Botão para próxima pergunta
+nextQuestionBtn.addEventListener('click', () => {
+  feedbackModal.classList.remove('active');
+  perguntaAtual++;
+  
+  if (perguntaAtual >= perguntas.length) {
+    finalizarQuiz();
+  } else {
+    mostrarPergunta();
+  }
+});
+
+// Botões da tela final
+playAgainBtn.addEventListener('click', () => {
+  finalModal.classList.remove('active');
+  reiniciarQuiz();
+});
+
+nextPlayerBtn.addEventListener('click', () => {
+  finalModal.classList.remove('active');
+  startScreen.style.display = 'flex';
+  updateRankingList();
+});
+
+backToWelcomeBtn.addEventListener('click', () => {
+  finalModal.classList.remove('active');
+  welcomeScreen.style.display = 'flex';
+});
+
+// Fechar modal pressionando ESC
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && authModal.classList.contains('active')) {
+    authModal.classList.remove('active');
+  }
+});
+
+// Iniciar o jogo
+function startGame() {
+  playerName = nicknameInput.value.trim();
+  if (!playerName) {
+    alert("Por favor, digite um apelido para começar!");
+    return;
+  }
+  
+  playerInfo.textContent = `Jogador: ${playerName}`;
+  startScreen.style.display = 'none';
+  
+  // Iniciar o cronômetro do jogo
+  startQuizTimer();
+  
+  // Iniciar o quiz
+  mostrarPergunta();
+}
+
+// Reiniciar o quiz (mantém o mesmo jogador)
+function reiniciarQuiz() {
+  perguntaAtual = 0;
+  pontuacao = 0;
+  scoreValue.textContent = '0';
+  msgEl.textContent = '';
+  feedbackEl.textContent = '';
+  
+  // Iniciar o cronômetro do jogo
+  startQuizTimer();
+  
+  // Iniciar o quiz
+  mostrarPergunta();
+}
+
+// Iniciar cronômetro do quiz
+function startQuizTimer() {
+  tempoTotal = 0;
+  if (quizTimerInterval) clearInterval(quizTimerInterval);
+  
+  quizTimerInterval = setInterval(() => {
+    tempoTotal++;
+    const minutes = Math.floor(tempoTotal / 60);
+    const seconds = tempoTotal % 60;
+    timerDisplay.textContent = `Tempo: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  }, 1000);
+}
+
+// Atualizar a lista de ranking
+function updateRankingList() {
+  rankingList.innerHTML = '';
+  
+  if (ranking.length === 0) {
+    rankingList.innerHTML = '<p style="text-align: center; color: #FFEB3B;">Nenhum registro ainda</p>';
+    return;
+  }
+  
+  ranking.slice(0, 5).forEach((player, index) => {
+    const item = document.createElement('div');
+    item.className = 'ranking-item';
+    item.innerHTML = `
+      <span class="ranking-position">${index + 1}º</span>
+      <span class="ranking-name">${player.name}</span>
+      <span class="ranking-score">${player.score} pontos</span>
+    `;
+    rankingList.appendChild(item);
+  });
+}
+
+// Mostrar pergunta atual
+function mostrarPergunta() {
+  if (perguntaAtual >= perguntas.length) {
+    finalizarQuiz();
+    return;
+  }
+  
+  const pergunta = perguntas[perguntaAtual];
+  
+  // Iniciar temporizador para a pergunta
+  iniciarTemporizadorPergunta();
+  
+  // Construir HTML da pergunta
+  quizContainer.innerHTML = `
+    <div class="quiz-card">
+      <div class="question-text">
+        ${perguntaAtual + 1}. ${pergunta.pergunta}
+        <span class="question-points ${pergunta.pontos === 20 ? 'bonus' : ''}">${pergunta.pontos} pts</span>
+      </div>
+      <div class="options-container">
+        ${pergunta.opcoes.map((opcao, index) => `
+          <div class="option" data-index="${index}">
+            ${String.fromCharCode(65 + index)}) ${opcao}
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+  
+  // Adicionar event listeners às opções
+  document.querySelectorAll('.option').forEach(option => {
+    option.addEventListener('click', () => {
+      if (option.classList.contains('disabled')) return;
+      
+      const selectedIndex = parseInt(option.dataset.index);
+      respostaSelecionada = selectedIndex;
+      respostaCorreta = pergunta.resposta;
+      verificarResposta(selectedIndex);
+    });
+  });
+}
+
+// Iniciar temporizador para a pergunta (25 segundos)
+function iniciarTemporizadorPergunta() {
+  let tempoRestante = 25;
+  timerEl.textContent = tempoRestante;
+  timerEl.classList.remove('warning');
+  feedbackEl.textContent = '';
+  
+  if (timerInterval) clearInterval(timerInterval);
+  
+  timerInterval = setInterval(() => {
+    tempoRestante--;
+    timerEl.textContent = tempoRestante;
+    
+    if (tempoRestante <= 10) {
+      timerEl.classList.add('warning');
+    }
+    
+    if (tempoRestante <= 0) {
+      clearInterval(timerInterval);
+      timerEl.textContent = "0";
+      
+      // Tempo esgotado
+      respostaSelecionada = null;
+      respostaCorreta = perguntas[perguntaAtual].resposta;
+      mostrarFeedback(false, true);
+    }
+  }, 1000);
+}
+
+// Mostrar feedback da resposta
+function mostrarFeedback(acertou, tempoEsgotado = false) {
+  const pergunta = perguntas[perguntaAtual];
+  
+  // Configurar o modal de feedback
+  if (tempoEsgotado) {
+    feedbackIcon.textContent = '⏰';
+    feedbackTitle.textContent = 'Tempo Esgotado!';
+    feedbackTitle.style.color = '#F44336';
+  } else if (acertou) {
+    feedbackIcon.textContent = '☢️'; // Símbolo de radioatividade para resposta correta
+    feedbackTitle.textContent = 'Resposta Correta!';
+    feedbackTitle.style.color = '#FFEB3B'; // Amarelo
+  } else {
+    feedbackIcon.textContent = '💀'; // Caveira para resposta incorreta
+    feedbackTitle.textContent = 'Resposta Incorreta';
+    feedbackTitle.style.color = '#F44336'; // Vermelho
+  }
+  
+  feedbackExplanation.innerHTML = `
+    <strong>Resposta correta:</strong> ${String.fromCharCode(65 + pergunta.resposta)}) ${pergunta.opcoes[pergunta.resposta]}
+    <br><br>
+    <strong>Explicação:</strong> ${pergunta.explicacao}
+  `;
+  
+  // Mostrar o modal
+  feedbackModal.classList.add('active');
+}
+
+// Verificar resposta selecionada
+function verificarResposta(indiceSelecionado) {
+  clearInterval(timerInterval);
+  
+  const pergunta = perguntas[perguntaAtual];
+  const opcoes = document.querySelectorAll('.option');
+  
+  // Desabilitar todas as opções
+  opcoes.forEach(opt => {
+    opt.classList.add('disabled');
+  });
+  
+  // Destacar resposta correta
+  const opcaoCorreta = document.querySelector(`.option[data-index="${pergunta.resposta}"]`);
+  opcaoCorreta.classList.add('correct');
+  
+  // Verificar se a resposta está correta
+  if (indiceSelecionado === pergunta.resposta) {
+    // Resposta correta
+    pontuacao += pergunta.pontos;
+    scoreValue.textContent = pontuacao;
+    msgEl.textContent = `☢️ Resposta correta! +${pergunta.pontos} pontos`;
+    feedbackEl.textContent = '☢️';
+    
+    // Mostrar feedback
+    mostrarFeedback(true);
+  } else {
+    // Resposta incorreta
+    const respostaSelecionadaElemento = document.querySelector(`.option[data-index="${indiceSelecionado}"]`);
+    respostaSelecionadaElemento.classList.add('incorrect');
+    msgEl.textContent = '💀 Resposta incorreta';
+    feedbackEl.textContent = '💀';
+    
+    // Mostrar feedback
+    mostrarFeedback(false);
+  }
+}
+
+// Finalizar o quiz
+function finalizarQuiz() {
+  clearInterval(quizTimerInterval);
+  
+  // Adicionar ao ranking
+  ranking.push({ name: playerName, score: pontuacao, time: tempoTotal });
+  
+  // Ordenar por pontuação (maior primeiro)
+  ranking.sort((a, b) => b.score - a.score);
+  
+  // Manter apenas os 10 melhores
+  if (ranking.length > 10) {
+    ranking = ranking.slice(0, 10);
+  }
+  
+  // Salvar no localStorage
+  localStorage.setItem('radioprotection_ranking', JSON.stringify(ranking));
+  
+  // Mostrar modal final
+  finalScoreValue.textContent = pontuacao;
+  finalModal.classList.add('active');
+}
+
+// Formatar tempo em minutos e segundos
+function formatTime(seconds) {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}
+</script>
+</body>
+</html>
